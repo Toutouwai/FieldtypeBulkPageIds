@@ -1,0 +1,51 @@
+<?php namespace ProcessWire;
+
+class FieldtypeBulkPageIds extends FieldtypePage {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Bulk Page IDs',
+			'summary' => 'A fieldtype for storing a large number of page IDs.',
+			'version' => '0.1.0',
+			'author' => 'Robin Sallis',
+			'href' => 'https://github.com/Toutouwai/FieldtypeBulkPageIds',
+			'icon' => 'arrows-alt',
+			'installs' => 'InputfieldBulkPageIds',
+			'requires' => 'ProcessWire>=3.0.0, PHP>=5.4.0',
+		);
+	}
+
+	public function getInputfield(Page $page, Field $field) {
+		$inputfield = $this->wire()->modules->get('InputfieldBulkPageIds');
+		return $inputfield;
+	}
+
+	public function ___wakeupValue(Page $page, Field $field, $value) {
+		return $value;
+	}
+
+	public function ___formatValue(Page $page, Field $field, $value) {
+		return $value;
+	}
+
+	public function getBlankValue(Page $page, Field $field) {
+		return [];
+	}
+
+	public function ___sleepValue(Page $page, Field $field, $value) {
+		return $value;
+	}
+
+	public function sanitizeValue(Page $page, Field $field, $value) {
+		return (array) $value;
+	}
+
+	public function ___getConfigInputfields(Field $field) {
+		return $this->wire(new InputfieldWrapper());
+	}
+
+	public function getModuleConfigInputfields(array $data) {
+		return $this->wire(new InputfieldWrapper());
+	}
+
+}

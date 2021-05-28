@@ -1,0 +1,75 @@
+<?php namespace ProcessWire;
+
+class InputfieldBulkPageIds extends Inputfield {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Bulk Page IDs: inputfield',
+			'summary' => 'Displays a non-editable list of page titles for FieldtypeBulkPageIds.',
+			'version' => '0.1.0',
+			'author' => 'Robin Sallis',
+			'href' => 'https://github.com/Toutouwai/FieldtypeBulkPageIds',
+			'icon' => 'arrows-alt',
+			'requires' => 'FieldtypeBulkPageIds, ProcessWire>=3.0.0, PHP>=5.4.0',
+		);
+	}
+
+	public function __construct() {
+		parent::__construct();
+		$this->edit_link = 0;
+	}
+
+	public function ___render() {
+		if(!$this->value) return 'This field is empty.';
+
+		$ids = implode(',', $this->value);
+		$sql = <<<EOT
+SELECT pages.id, field_title.data AS title
+FROM pages
+LEFT JOIN field_title ON field_title.pages_id = pages.id
+WHERE pages.id IN ($ids)
+ORDER BY title
+EOT;
+		$results = $this->wire()->database->query($sql);
+		$data = $results->fetchAll(\PDO::FETCH_KEY_PAIR);
+		$admin_url = $this->wire()->urls->admin;
+		$out = "<div class='ibpi-outer'><div class='ibpi-values'>";
+		foreach($data as $id => $title) {
+			if($this->edit_link) {
+				$item = "<a href='{$admin_url}page/edit/?id=$id' target='_blank'>$title</a>";
+			} else {
+				$item = $title;
+			}
+			$out .= "<div class='ibpi-value'>$item</div>";
+		}
+		$out .= "</div></div>";
+		return $out;
+	}
+
+	public function ___processInput(WireInputData $input) {
+		return $this;
+	}
+
+	public function ___getConfigInputfields() {
+		$inputfields = parent::___getConfigInputfields();
+		$modules = $this->wire()->modules;
+
+		/** @var InputfieldRadios $f */
+		$f = $modules->get('InputfieldRadios');
+		$f_name = 'edit_link';
+		$f->name = $f_name;
+		$f->label = $this->_('Link titles to Page Edit?');
+		$f->addOption(1, $this->_('Yes'));
+		$f->addOption(0, $this->_('No'));
+		$f->optionColumns = 1;
+		$f->value = $this->$f_name;
+		$inputfields->add($f);
+
+		return $inputfields;
+	}
+
+	public function ___getConfigAllowContext($field) {
+		return array_merge(parent::___getConfigAllowContext($field), ['edit_link']);
+	}
+
+}
