@@ -32,6 +32,7 @@ ORDER BY title
 EOT;
 		$results = $this->wire()->database->query($sql);
 		$data = $results->fetchAll(\PDO::FETCH_KEY_PAIR);
+		$this->notes = count($data) . ' ' . $this->_('items');
 		$admin_url = $this->wire()->urls->admin;
 		$out = "<div class='ibpi-outer'><div class='ibpi-values'>";
 		foreach($data as $id => $title) {
