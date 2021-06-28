@@ -6,13 +6,37 @@ class FieldtypeBulkPageIds extends FieldtypePage {
 		return array(
 			'title' => 'Bulk Page IDs',
 			'summary' => 'A fieldtype for storing a large number of page IDs.',
-			'version' => '0.1.0',
+			'version' => '0.1.1',
 			'author' => 'Robin Sallis',
 			'href' => 'https://github.com/Toutouwai/FieldtypeBulkPageIds',
 			'icon' => 'arrows-alt',
 			'installs' => 'InputfieldBulkPageIds',
 			'requires' => 'ProcessWire>=3.0.0, PHP>=5.4.0',
 		);
+	}
+
+	public function init() {
+		$this->addHookBefore('FieldtypeBulkPageIds::markupValue', $this, 'beforeMarkupValue');
+	}
+
+	/**
+	 * Before FieldtypeBulkPageIds::markupValue
+	 * To allow subfield columns in Lister/ListerPro
+	 *
+	 * @param HookEvent
+	 */
+	public function beforeMarkupValue(HookEvent $event) {
+		/** @var Page $page */
+		$page = $event->arguments(0);
+		/** @var Field $field */
+		$field = $event->arguments(1);
+		$value = $event->arguments(2);
+		$property = $event->arguments(3);
+
+		if($property === 'count') {
+			$event->replace = true;
+			$event->return = count($value);
+		}
 	}
 
 	public function getInputfield(Page $page, Field $field) {
