@@ -6,7 +6,7 @@ class FieldtypeBulkPageIds extends FieldtypePage {
 		return array(
 			'title' => 'Bulk Page IDs',
 			'summary' => 'A fieldtype for storing a large number of page IDs.',
-			'version' => '0.1.1',
+			'version' => '0.1.2',
 			'author' => 'Robin Sallis',
 			'href' => 'https://github.com/Toutouwai/FieldtypeBulkPageIds',
 			'icon' => 'arrows-alt',
@@ -61,11 +61,31 @@ class FieldtypeBulkPageIds extends FieldtypePage {
 	}
 
 	public function sanitizeValue(Page $page, Field $field, $value) {
+		// This method should perhaps validate the IDs against the template_id setting
+		// But for now the user is simply trusted to set valid page IDs to the field
 		return (array) $value;
 	}
 
 	public function ___getConfigInputfields(Field $field) {
-		return $this->wire(new InputfieldWrapper());
+		$modules = $this->wire()->modules;
+		$wrapper = $this->wire(new InputfieldWrapper());
+
+		// Optional template for pages that will be stored in this field
+		// Exists so that InputfieldSelector and Lister/ListerPro will show subfields
+		/** @var InputfieldSelect $f */
+		$f = $modules->get('InputfieldSelect');
+		$f_name = 'template_id';
+		$f->name = $f_name;
+		$f->label = $this->_('Template');
+		$f->description = $this->_('Optional: Select the template of pages that are allowed to have their ID stored in this field.');
+		foreach($this->wire()->templates as $template) {
+			$f->addOption($template->id, $template->name);
+		}
+		$f->icon = 'cube';
+		$f->value = $field->$f_name;
+		$wrapper->add($f);
+
+		return $wrapper;
 	}
 
 	public function getModuleConfigInputfields(array $data) {
